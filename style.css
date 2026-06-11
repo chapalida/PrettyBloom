@@ -1,0 +1,275 @@
+  :root {
+    --bg: #f5f0e8;
+    --card-bg: #fffdf8;
+    --card-shadow: #d4c9b0;
+    --accent: #e8633a;
+    --text: #1a1612;
+    --subtext: #7a6f63;
+    --flip-bg: #1a1612;
+    --flip-text: #fffdf8;
+    --progress-bg: #e0d9cc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(232,99,58,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(58,123,232,0.06) 0%, transparent 50%);
+  }
+
+  header {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 24px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .deck-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.7rem;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .counter {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--subtext);
+    background: var(--progress-bg);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    color: var(--subtext);
+    margin: 6px 0 10px;
+    opacity: 0.8;
+    text-align: center;
+  }
+
+  /* ── Main stage: left pile | card | right stack ── */
+  .stage {
+    width: 100%;
+    max-width: 480px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    gap: 0;
+    position: relative;
+  }
+
+  /* ── Side pile / stack containers ── */
+  .pile-wrap {
+    flex: 0 0 72px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Individual ghost cards in the piles */
+  .pile-card {
+    position: absolute;
+    width: 180px;
+    height: 250px;
+    border-radius: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-shadow);
+    transform-origin: center bottom;
+    transition: all 0.4s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Left pile: viewed cards fan out */
+  .left-pile .pile-card:nth-child(1) { transform: translate(5px, 7px);  opacity: 0.35; }
+  .left-pile .pile-card:nth-child(2) { transform: translate(3px, 4px);  opacity: 0.55; }
+  .left-pile .pile-card:nth-child(3) { transform: translate(1px, 1px);  opacity: 0.80; }
+
+  /* Right stack: upcoming cards sit straight, slightly offset behind */
+  .right-stack .pile-card:nth-child(1) { transform: translate(5px, 7px);  opacity: 0.35; }
+  .right-stack .pile-card:nth-child(2) { transform: translate(3px, 4px);  opacity: 0.55; }
+  .right-stack .pile-card:nth-child(3) { transform: translate(1px, 1px);  opacity: 0.80; }
+
+  /* Pile labels */
+  .pile-label {
+    position: absolute;
+    bottom: calc(50% - 62px);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--subtext);
+    opacity: 0.6;
+    white-space: nowrap;
+  }
+
+  .left-pile .pile-label  { bottom: calc(50% - 68px); }
+  .right-stack .pile-label { bottom: calc(50% - 68px); }
+
+  /* ── Centre card area ── */
+  .card-area {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    position: relative;
+  }
+
+  .flashcard-wrap {
+    width: 100%;
+    max-width: 350px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .flashcard {
+    width: 100%;
+    aspect-ratio: 3/ 4;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+    border-radius: 20px;
+    will-change: transform;
+  }
+
+  .flashcard.flipped { transform: rotateY(180deg); }
+
+  /* Swipe animations */
+  .flashcard-wrap.swipe-left  { animation: swipeLeft  0.38s cubic-bezier(.4,0,.2,1) forwards; }
+  .flashcard-wrap.swipe-right { animation: swipeRight 0.38s cubic-bezier(.4,0,.2,1) forwards; }
+  .flashcard-wrap.enter-right { animation: enterRight 0.38s cubic-bezier(.4,0,.2,1) forwards; }
+  .flashcard-wrap.enter-left  { animation: enterLeft  0.38s cubic-bezier(.4,0,.2,1) forwards; }
+
+  @keyframes swipeLeft  { to { transform: translateX(-160%) rotate(-10deg); opacity: 0; } }
+  @keyframes swipeRight { to { transform: translateX(160%)  rotate(10deg);  opacity: 0; } }
+  @keyframes enterRight { from { transform: translateX(120%) rotate(7deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes enterLeft  { from { transform: translateX(-120%) rotate(-7deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* Card faces */
+  .card-front, .card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-front {
+    background: var(--card-bg);
+    box-shadow: 0 2px 0 var(--card-shadow), 0 8px 32px rgba(0,0,0,0.14);
+  }
+
+  .card-front-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 20px;
+    gap: 12px;
+  }
+
+  .card-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--subtext);
+    opacity: 0.7;
+    align-self: flex-start;
+  }
+
+  .card-image-wrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.03);
+  }
+
+  .card-image-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+
+  .drawing-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: 1rem; color: var(--subtext); opacity: 0.5;
+    flex-direction: column; gap: 8px;
+  }
+
+  .card-tag {
+    font-family: 'Caveat', cursive;
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 700;
+    align-self: flex-end;
+  }
+
+  .card-back {
+    background: var(--flip-bg);
+    transform: rotateY(180deg);
+    box-shadow: 0 2px 0 #0d0b08, 0 8px 32px rgba(0,0,0,0.25);
+    padding: 28px 24px;
+    justify-content: space-between;
+  }
+
+  .back-content { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; }
+  .back-title { font-family: 'Caveat', cursive; font-size: 2rem; color: var(--flip-text); font-weight: 700; line-height: 1.15; }
+  .back-body { font-size: 0.88rem; color: rgba(255,255,255,0.7); line-height: 1.65; font-weight: 300; }
+  .back-note { font-family: 'Caveat', cursive; font-size: 0.95rem; color: var(--accent); opacity: 0.85; }
+ 
+  /* Swipe indicators */
+  .swipe-indicator {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-family: 'Caveat', cursive; font-size: 1.6rem; font-weight: 700;
+    padding: 8px 14px; border-radius: 10px; border: 2.5px solid;
+    opacity: 0; pointer-events: none; transition: opacity 0.1s; z-index: 10;
+  }
+  .swipe-indicator.left  { right: 16px; color: #e84a3a; border-color: #e84a3a; background: rgba(232,74,58,0.08); }
+  .swipe-indicator.right { left: 16px;  color: #3ab86b; border-color: #3ab86b; background: rgba(58,184,107,0.08); }
+
+  /* Nav */
+  .nav-row {
+    width: 100%; max-width: 480px;
+    padding: 12px 24px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+
+  .nav-btn {
+    flex: 1; height: 50px; border: none; border-radius: 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.83rem; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .nav-btn:active { transform: scale(0.96); }
+  .nav-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+  .btn-prev { background: var(--progress-bg); color: var(--subtext); }
+  .btn-next  { background: var(--accent); color: white; }

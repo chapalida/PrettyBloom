@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PrettyBloom</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+</style>
+<link rel="stylesheet" type="text/css" href="style.css" media="all">
+</head>
+<body>
+
+<header>
+  <div class="deck-title" id="deckTitle">My Deck</div>
+  <div class="counter" id="backNote"></div>
+</header>
+
+
+<p class="hint">Tap to flip. Swipe or arrows to navigate</p>
+
+<div class="stage" id="stage">
+
+  <!-- LEFT: viewed pile -->
+  <div class="pile-wrap left-pile" id="leftPile">
+    <!-- cards injected by JS -->
+    <span class="pile-label" id="leftLabel"></span>
+  </div>
+
+  <!-- CENTRE: active card -->
+  <div class="card-area">
+    <div class="flashcard-wrap" id="cardWrap">
+      <div class="flashcard" id="flashcard">
+
+        <div class="card-front">
+          <div class="card-front-inner">
+            <div class="card-image-wrap" id="cardImageWrap"></div>
+          </div>
+        </div>
+
+        <div class="card-back">
+          <div class="back-content">
+            <div class="back-title" id="backTitle"></div>
+            <div class="back-body"  id="backBody"></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="swipe-indicator left"  id="indLeft">✕ skip</div>
+      <div class="swipe-indicator right" id="indRight">✓ got it</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: upcoming stack -->
+  <div class="pile-wrap right-stack" id="rightStack">
+    <!-- cards injected by JS -->
+    <span class="pile-label" id="rightLabel"></span>
+  </div>
+
+</div>
+
+<div class="nav-row" id="navRow">
+  <button class="nav-btn btn-prev" id="btnPrev" onclick="navigate(-1)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    Prev
+  </button>
+  <button class="nav-btn btn-next" id="btnNext" onclick="navigate(1)">
+    Next
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CARD DATA — edit this JSON to add your cards
+//  "image": path to your drawing e.g. "drawings/apple.png"
+//  Leave "image": "" to show a placeholder + emoji
+// ═══════════════════════════════════════════════
+const DECK = {
+  title: "MA ME mU me mo",
+  cards: [
+    {
+      image: "pic/drawing.jpg",
+      decorations: [
+        ""
+      ],
+      name: "Apple",
+      body: "A round fruit that grows on trees. Usually red, green, or yellow. Rich in fibre and vitamins.",
+      note: "1/5"
+    },
+    {
+      image: "pic/hamptonst.jpg",
+      decorations: [
+        ""
+      ],
+      name: "Cat",
+      body: "A small domesticated carnivorous mammal known for independence and curiosity.",
+      note: "2/5"
+    },
+    {
+      image: "pic/meme.jpg",
+      decorations: [
+        ""
+      ],
+      name: "Earth",
+      body: "The third planet from the Sun. The only astronomical object known to harbour life.",
+      note: "3/5"
+    },
+    {
+      image: "pic/chaselfie.jpg",
+      decorations: [
+        ""
+      ],
+      name: "Guitar",
+      body: "A stringed musical instrument with a fretted neck. Typically has 6 strings.",
+      note: "4/5"
+    },
+    {
+      image: "pic/rerd.jpg",
+      decorations: [
+        ""
+      ],
+      name: "Mountain",
+      body: "A large landform that rises steeply above the surrounding land, with a peak or summit.",
+      note: "5/5"
+    }
+  ]
+};
+
+// ═══════════════════════════════════════════════
+
+let current = 0;
+let isFlipped = false;
+const total = DECK.cards.length;
+
+const flashcard = document.getElementById('flashcard');
+const cardWrap  = document.getElementById('cardWrap');
+const leftPile  = document.getElementById('leftPile');
+const rightStack= document.getElementById('rightStack');
+const leftLabel = document.getElementById('leftLabel');
+const rightLabel= document.getElementById('rightLabel');
+const navRow    = document.getElementById('navRow');
+const btnPrev   = document.getElementById('btnPrev');
+const btnNext   = document.getElementById('btnNext');
+const indLeft   = document.getElementById('indLeft');
+const indRight  = document.getElementById('indRight');
+
+document.getElementById('deckTitle').textContent = DECK.title;
+
+// ── Build pile ghost cards ──────────────────────
+function buildPile(container, count, labelEl, labelText) {
+  // Remove old pile cards (keep the label span)
+  container.querySelectorAll('.pile-card').forEach(el => el.remove());
+  for (let i = 0; i < Math.min(count, 3); i++) {
+    const div = document.createElement('div');
+    div.className = 'pile-card';
+    container.insertBefore(div, labelEl);
+  }
+  labelEl.textContent = count > 0 ? labelText : '';
+}
+
+function updatePiles() {
+  const viewed   = current;           // cards already seen
+  const upcoming = total - current - 1; // cards still to come
+
+  buildPile(leftPile,   viewed,   leftLabel,  viewed);
+  buildPile(rightStack, upcoming, rightLabel, upcoming);
+}
+
+// ── Render card content ─────────────────────────
+function renderCard(index) {
+  const card = DECK.cards[index];
+  isFlipped = false;
+  flashcard.classList.remove('flipped');
+
+  document.getElementById('backTitle').textContent = card.name;
+  document.getElementById('backBody').textContent  = card.body;
+  document.getElementById('backNote').textContent  = card.note || '';
+
+  const imageWrap = document.getElementById('cardImageWrap');
+  if (card.image && card.image.trim() !== "") {
+    imageWrap.innerHTML = `<img src="${card.image}" class="main-card-img" alt="${card.name}">`;}
+
+  // Button states
+  btnPrev.disabled = index === 0;
+
+  updatePiles();
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  flashcard.classList.toggle('flipped', isFlipped);
+}
+
+function navigate(dir) {
+  const next = current + dir;
+  if (next < 0) return;
+  if (next >= total) return; 
+
+  const outClass = dir > 0 ? 'swipe-left'  : 'swipe-right';
+  const inClass  = dir > 0 ? 'enter-right' : 'enter-left';
+
+  cardWrap.classList.add(outClass);
+  setTimeout(() => {
+    cardWrap.classList.remove(outClass);
+    current = next;
+    renderCard(current);
+    cardWrap.classList.add(inClass);
+    setTimeout(() => cardWrap.classList.remove(inClass), 400);
+  }, 360);
+}
+
+
+
+// ── Tap to flip ─────────────────────────────────
+cardWrap.addEventListener('click', () => { if (!isSwiping) flipCard(); });
+
+// ── Keyboard ────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') navigate(1);
+  else if (e.key === 'ArrowLeft') navigate(-1);
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+});
+
+// ── Touch / Swipe ────────────────────────────────
+let touchStartX = 0, touchStartY = 0, touchCurrentX = 0;
+let isSwiping = false;
+const SWIPE_THRESHOLD = 70;
+
+cardWrap.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchCurrentX = touchStartX;
+  isSwiping = false;
+}, { passive: true });
+
+cardWrap.addEventListener('touchmove', e => {
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+  touchCurrentX = e.touches[0].clientX;
+
+  if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+    isSwiping = true;
+    e.preventDefault();
+    const tilt = Math.min(Math.max(dx / 10, -10), 10);
+    cardWrap.style.transform = `translateX(${dx * 0.28}px) rotate(${tilt * 0.35}deg)`;
+    const ratio = Math.abs(dx) / SWIPE_THRESHOLD;
+    if (dx < 0) { indLeft.style.opacity  = Math.min(ratio, 1); indRight.style.opacity = 0; }
+    else        { indRight.style.opacity = Math.min(ratio, 1); indLeft.style.opacity  = 0; }
+  }
+}, { passive: false });
+
+cardWrap.addEventListener('touchend', () => {
+  const dx = touchCurrentX - touchStartX;
+  cardWrap.style.transform = '';
+  indLeft.style.opacity = 0;
+  indRight.style.opacity = 0;
+  if (isSwiping && Math.abs(dx) >= SWIPE_THRESHOLD) navigate(dx < 0 ? 1 : -1);
+  setTimeout(() => { isSwiping = false; }, 50);
+}, { passive: true });
+
+// ── Init ────────────────────────────────────────
+renderCard(0);
+</script>
+</body>
+</html>
