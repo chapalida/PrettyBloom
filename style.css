@@ -30,8 +30,8 @@ body::after {
   background-image:
     radial-gradient(circle at 20% 80%, rgba(232,99,58,0.06) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(58,123,232,0.06) 0%, transparent 50%),
-    url("pic/bg.png");
-  url("pic/utensil.png");
+    url("pic/bg.png"),
+    url("pic/utensil.png");
   background-size: auto, auto, 100% auto, contain;
   background-position: center, center, bottom center, center;
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
