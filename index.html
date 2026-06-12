@@ -82,47 +82,32 @@ const DECK = {
   cards: [
     {
       image: "pic/drawing.jpg",
-      decorations: [
-        ""
-      ],
-      name: "Apple",
-      body: "A round fruit that grows on trees. Usually red, green, or yellow. Rich in fibre and vitamins.",
+      name: ">w<",
+      body: "ชอบไหม ชอบไหม  (ชอบอ่ะ)<br>รูปร่างหน้าตาแบบเนี้ยะ<br>ถามหน่อยเถอะพี่ ชอบไหมชอบไหม<br>(เต็มสิบ เต็มสิบ)",
       note: "1/5"
     },
     {
       image: "pic/hamptonst.jpg",
-      decorations: [
-        ""
-      ],
-      name: "Cat",
-      body: "A small domesticated carnivorous mammal known for independence and curiosity.",
+      name: "Hampton Station",
+      body: "",
       note: "2/5"
     },
     {
       image: "pic/meme.jpg",
-      decorations: [
-        ""
-      ],
-      name: "Earth",
-      body: "The third planet from the Sun. The only astronomical object known to harbour life.",
+      name: "รวมคำคมคนโสด",
+      body: "วันนี้ผมทัก ผมรัก ผมรอ<br>วันไหนผมท้อ ผมพอ ผมลา",
       note: "3/5"
     },
     {
       image: "pic/chaselfie.jpg",
-      decorations: [
-        ""
-      ],
-      name: "Guitar",
-      body: "A stringed musical instrument with a fretted neck. Typically has 6 strings.",
+      name: "Twin verrrห์",
+      body: "รบกวนเหมยตูหน้าน้องก่อนส่งต่อ ขอบคุณค่ะ",
       note: "4/5"
     },
     {
       image: "pic/rerd.jpg",
-      decorations: [
-        ""
-      ],
-      name: "Mountain",
-      body: "A large landform that rises steeply above the surrounding land, with a peak or summit.",
+      name: "อย่างมันส์ อย่างเฟี้ยว อย่างเริ่ด เชิดๆ เลย",
+      body: "จ๊าา... ไม่ลืมที่จะ แกงพี่บูม =w=",
       note: "5/5"
     }
   ]
@@ -175,8 +160,8 @@ function renderCard(index) {
   flashcard.classList.remove('flipped');
 
   document.getElementById('backTitle').textContent = card.name;
-  document.getElementById('backBody').textContent  = card.body;
   document.getElementById('backNote').textContent  = card.note || '';
+  document.getElementById('backBody').innerHTML  = card.body;
 
   const imageWrap = document.getElementById('cardImageWrap');
   if (card.image && card.image.trim() !== "") {
